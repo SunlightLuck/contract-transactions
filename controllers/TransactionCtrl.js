@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const Transaction = mongoose.model('transactions');
 
 router.get('/contract-save/:id', (req, res) => {
+  console.log("AAAA");
   axios.get(`http://api.etherscan.io/api?module=account&action=txlist&address=${req.params.id}&startblock=0&endblock=99999999&sort=asc&apikey=YourApiKeyToken`).then(data => {
     if(!data.result || data.result.length === 0) {
       return res.json({error: 'Contract doesn\'t exist'})
@@ -40,7 +41,8 @@ router.get('/contract-save/:id', (req, res) => {
 
 router.get('/contract-load/:id', (req, res) => {
   Transaction.find({contract: req.params.id}).then(data => {
-    if(!data) {
+    console.log(data);
+    if(!data || data.length === 0) {
       return res.json({error: 'Contract doesn\'t exist'})
     }
     res.json({transaction: data.tranactions});
