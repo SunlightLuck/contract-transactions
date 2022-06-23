@@ -5,6 +5,9 @@ const TransactionSchema = new Schema({
   contract: {
     type: String
   },
+  chain: {
+    type: String
+  },
   transactions: [
     {
       blockNumber: {

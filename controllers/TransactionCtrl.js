@@ -2,18 +2,18 @@ const express = require('express');
 const axios = require('axios');
 const router = express.Router();
 const mongoose = require('mongoose');
-require('dotenv').config();
 
 const Transaction = mongoose.model('transactions');
+const chains = ["etherscan.io", "bscscan.com", "polygonscan.com"]
 
-router.get('/contract-save/:id', (req, res) => {
-  console.log("AAAA");
-  axios.get(`http://api.etherscan.io/api?module=account&action=txlist&address=${req.params.id}&startblock=0&endblock=99999999&sort=asc&apikey=${process.env.API_KEY}`).then(data => {
+router.get('/contract-save', (req, res) => {
+  axios.get(`http://api.${chains[req.query.chain]}/api?module=account&action=txlist&address=${req.query.contract}&startblock=0&endblock=99999999&sort=asc`).then(data => {
     if(!data.data.result || data.data.result.length === 0) {
       return res.json({error: 'Contract doesn\'t exist'})
     }
     const newTrans = new Transaction({
-      contract: req.params.id,
+      contract: req.query.contract,
+      chain: chains[req.query.chain],
       transactions: data.data.result.map(item => (
         {
           blockNumber: item.blockNumber,
@@ -40,9 +40,8 @@ router.get('/contract-save/:id', (req, res) => {
   }).catch(err => console.log(err))
 })
 
-router.get('/contract-load/:id', (req, res) => {
-  Transaction.findOne({contract: req.params.id}).then(data => {
-    console.log(data);
+router.get('/contract-load', (req, res) => {
+  Transaction.findOne({contract: req.query.contract, chain: chains[req.query.chain]}).then(data => {
     if(!data || data.length === 0) {
       return res.json({error: 'Contract doesn\'t exist'})
     }

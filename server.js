@@ -9,7 +9,6 @@ const config = require('./config');
 const app = express();
 
 app.use(cors())
-require('dotenv').config();
 
 mongoose.connect(config.mongoURI).then(res => console.log('MongoDB Connected')).catch(err => console.log(err))
 require('./models/Transaction');
@@ -17,12 +16,10 @@ require('./models/Transaction');
 const cron = new cronJob('0 */5 * * * *', () => {
   const Transaction = mongoose.model('transactions');
   Transaction.find().then(res => res.forEach(tx => {
-    console.log(tx.contract)
-    axios.get(`http://api.etherscan.io/api?module=account&action=txlist&address=${tx.contract}&startblock=0&endblock=99999999&sort=asc&apikey=${process.env.API_KEY}`).then(data => {
+    axios.get(`http://api.${tx.chain}/api?module=account&action=txlist&address=${tx.contract}&startblock=0&endblock=99999999&sort=asc`).then(data => {
       if(data.data.status !== "1" || !data.data.result || data.data.result.length === 0) {
         return;
       }
-      console.log("----------", tx.contract);
       tx.transactions = data.data.result.map(item => ({
         blockNumber: item.blockNumber,
         timeStamp: item.timeStamp,
@@ -41,7 +38,7 @@ const cron = new cronJob('0 */5 * * * *', () => {
         cumulativeGasUsed: item.cumulativeGasUsed,
         gasUsed: item.gasUsed,
         confirmations: item.confirmations
-      }))
+      }));
       tx.save();
     })
   }));
