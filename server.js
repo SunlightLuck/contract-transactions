@@ -19,10 +19,10 @@ const cron = new cronJob('0 */5 * * * *', () => {
   Transaction.find().then(res => res.forEach(tx => {
     console.log(tx.contract)
     axios.get(`http://api.etherscan.io/api?module=account&action=txlist&address=${tx.contract}&startblock=0&endblock=99999999&sort=asc&apikey=${process.env.API_KEY}`).then(data => {
-      console.log(data.data);
       if(data.data.status !== "1" || !data.data.result || data.data.result.length === 0) {
         return;
       }
+      console.log("----------", tx.contract);
       tx.transactions = data.data.result.map(item => ({
         blockNumber: item.blockNumber,
         timeStamp: item.timeStamp,
@@ -42,8 +42,8 @@ const cron = new cronJob('0 */5 * * * *', () => {
         gasUsed: item.gasUsed,
         confirmations: item.confirmations
       }))
+      tx.save();
     })
-    tx.save();
   }));
 })
 
