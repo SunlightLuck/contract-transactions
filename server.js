@@ -9,11 +9,12 @@ const config = require('./config');
 const app = express();
 
 app.use(cors())
+require('dotenv').config();
 
 mongoose.connect(config.mongoURI).then(res => console.log('MongoDB Connected')).catch(err => console.log(err))
 require('./models/Transaction');
 
-const cron = new cronJob('*/5 * * * * *', () => {
+const cron = new cronJob('0 */5 * * * *', () => {
   const Transaction = mongoose.model('transactions');
   Transaction.find().then(res => res.forEach(tx => {
     console.log(tx.contract)

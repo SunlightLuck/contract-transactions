@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const router = express.Router();
 const mongoose = require('mongoose');
+require('dotenv').config();
 
 const Transaction = mongoose.model('transactions');
 
